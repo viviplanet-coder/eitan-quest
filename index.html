@@ -423,10 +423,42 @@ let G={stage:1,step:1,words:[],idx:0,correct:0,streak:0,best:0,scores:[0,0,0],fl
 
 // ===== 音声 =====
 let sReady=false;
-function initS(){if(sReady||!window.speechSynthesis)return;const u=new SpeechSynthesisUtterance('');u.volume=0;window.speechSynthesis.speak(u);sReady=true;}
+// 音声リストを事前にロード（iPhoneでの遅延対策）
+if(window.speechSynthesis){
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();
+}
+function initS(){
+  if(sReady||!window.speechSynthesis)return;
+  const u=new SpeechSynthesisUtterance('');
+  u.volume=0;u.lang='en-US';
+  window.speechSynthesis.speak(u);
+  sReady=true;
+}
 document.addEventListener('touchstart',initS,{once:true});
 document.addEventListener('click',initS,{once:true});
-function speak(t,cb){if(!window.speechSynthesis){if(cb)cb();return;}window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=0.82;if(cb)u.onend=cb;window.speechSynthesis.speak(u);}
+function speak(t,cb){
+  if(!window.speechSynthesis){if(cb)cb();return;}
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(t);
+  u.lang='en-US';
+  u.rate=0.78;
+  u.pitch=1.0;
+  u.volume=1.0;
+  // 英語ネイティブの音声を優先して選ぶ
+  const voices=window.speechSynthesis.getVoices();
+  const preferred=['Samantha','Karen','Daniel','Google US English','Alex','Victoria','Moira'];
+  let chosen=null;
+  for(const name of preferred){
+    const v=voices.find(v=>v.name===name);
+    if(v){chosen=v;break;}
+  }
+  if(!chosen) chosen=voices.find(v=>v.lang==='en-US'&&!v.localService===false);
+  if(!chosen) chosen=voices.find(v=>v.lang.startsWith('en-'));
+  if(chosen) u.voice=chosen;
+  if(cb)u.onend=cb;
+  window.speechSynthesis.speak(u);
+}
 function speakJP(t){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ja-JP';u.rate=0.88;u.pitch=1.1;window.speechSynthesis.speak(u);}
 
 // ===== フィードバック =====
