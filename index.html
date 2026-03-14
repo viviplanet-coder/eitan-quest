@@ -50,6 +50,8 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 .step-badge.s1{background:#48dbfb18;border:1.5px solid var(--accent3);color:var(--accent3);}
 .step-badge.s2{background:#f7b73118;border:1.5px solid var(--accent);color:var(--accent);}
 .step-badge.s3{background:#ff6b6b18;border:1.5px solid var(--accent2);color:var(--accent2);}
+.step-badge.s4{background:#a29bfe18;border:1.5px solid #a29bfe;color:#a29bfe;}
+.step-badge.s4{background:#a29bfe18;border:1.5px solid #a29bfe;color:#a29bfe;}
 .step-badge-icon{font-size:18px;display:block;margin-bottom:3px;}
 
 /* BUTTONS */
@@ -64,6 +66,8 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 .step-label.s1{background:#48dbfb18;color:var(--accent3);border:1px solid #48dbfb55;}
 .step-label.s2{background:#f7b73118;color:var(--accent);border:1px solid #f7b73155;}
 .step-label.s3{background:#ff6b6b18;color:var(--accent2);border:1px solid #ff6b6b55;}
+.step-label.s4{background:#a29bfe18;color:#a29bfe;border:1px solid #a29bfe55;}
+.step-label.s4{background:#a29bfe18;color:#a29bfe;border:1px solid #a29bfe55;}
 .progress-ring{position:relative;width:44px;height:44px;}
 .progress-ring svg{transform:rotate(-90deg);}
 .progress-ring .ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;}
@@ -110,6 +114,19 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
 .kb-check{width:100%;padding:14px;margin-top:6px;background:linear-gradient(135deg,var(--accent2),#ee5a24);border:none;border-radius:var(--radius);font-family:'Nunito',sans-serif;font-weight:900;font-size:16px;color:#fff;cursor:pointer;box-shadow:0 4px 16px #ff6b6b30;}
 .kb-check:active{opacity:.85;}
 .kb-check:disabled{opacity:.4;cursor:not-allowed;}
+/* SPEECH */
+.speech-q-card{background:var(--card);border:1px solid #ffffff20;border-radius:24px;padding:24px 16px;text-align:center;margin:8px 0 14px;}
+.speech-jp{font-size:32px;font-weight:900;color:#a29bfe;font-family:'M PLUS Rounded 1c',sans-serif;margin:8px 0;}
+.speech-en-show{font-size:44px;font-weight:900;letter-spacing:2px;color:#a29bfe;margin:8px 0;}
+.speech-en-hint{font-size:18px;color:var(--text3);letter-spacing:3px;margin:6px 0 12px;}
+.mic-btn{width:100px;height:100px;border-radius:50%;border:none;cursor:pointer;font-size:40px;margin:16px auto;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#a29bfe,#6c5ce7);box-shadow:0 4px 24px #a29bfe44;transition:transform .15s;}
+.mic-btn:active{transform:scale(.93);}
+.mic-btn.listening{animation:micPulse 1s ease infinite;background:linear-gradient(135deg,var(--accent2),#ee5a24);}
+@keyframes micPulse{0%{box-shadow:0 0 0 0 #a29bfe88}70%{box-shadow:0 0 0 20px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.speech-status{font-size:14px;color:var(--text3);margin:8px 0;min-height:22px;}
+.speech-result-text{font-size:20px;font-weight:800;margin:8px 0;min-height:28px;color:var(--accent3);}
+.speech-hint-btn{background:transparent;border:1px solid #ffffff28;border-radius:99px;padding:8px 18px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text3);cursor:pointer;margin-top:6px;}
+
 
 /* FEEDBACK */
 .feedback-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:#00000099;backdrop-filter:blur(4px);}
@@ -178,6 +195,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
       <div class="step-badge s1"><span class="step-badge-icon">📖</span>STEP1<br><span style="font-size:9px;font-weight:400;">フラッシュ</span></div>
       <div class="step-badge s2"><span class="step-badge-icon">🔊</span>STEP2<br><span style="font-size:9px;font-weight:400;">発音クイズ</span></div>
       <div class="step-badge s3"><span class="step-badge-icon">⌨️</span>STEP3<br><span style="font-size:9px;font-weight:400;">入力クイズ</span></div>
+      <div class="step-badge s4"><span class="step-badge-icon">🎤</span>STEP4<br><span style="font-size:9px;font-weight:400;">発音チェック</span></div>
     </div>
     <div id="intro-prev" style="font-size:12px;color:var(--accent);font-weight:700;margin-top:10px;"></div>
   </div>
@@ -264,6 +282,34 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
   <div class="kb-wrap" id="kb-wrap"></div>
   <button class="kb-check" id="kb-check" onclick="checkTyping()">✓ 答える</button>
   <button class="btn btn-secondary" style="margin-top:8px;" onclick="showIntro()">← 戻る</button>
+</div>
+
+
+<!-- STEP4 SPEECH CHECK -->
+<div id="step4" class="screen">
+  <div class="step-header">
+    <span class="step-label s4">🎤 STEP 4 発音チェック</span>
+    <div class="progress-ring">
+      <svg width="44" height="44" viewBox="0 0 44 44">
+        <circle cx="22" cy="22" r="18" fill="none" stroke="#ffffff15" stroke-width="4"/>
+        <circle id="ring4" cx="22" cy="22" r="18" fill="none" stroke="#a29bfe" stroke-width="4" stroke-dasharray="113" stroke-dashoffset="113" stroke-linecap="round"/>
+      </svg>
+      <div class="ring-num" id="ring4-num">1</div>
+    </div>
+  </div>
+  <div class="speech-q-card">
+    <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">この英単語を声に出して発音しよう</div>
+    <div class="speech-en-show" id="speech-en-show">---</div>
+    <div style="font-size:14px;color:var(--text3);margin:4px 0 8px;" id="speech-jp-hint">---</div>
+    <button class="speak-btn" onclick="previewWord()">🔊 手本を聞く</button>
+  </div>
+  <div style="text-align:center;">
+    <button class="mic-btn" id="mic-btn" onclick="toggleMic()">🎤</button>
+    <div class="speech-status" id="speech-status">マイクボタンを押して話してね</div>
+    <div class="speech-result-text" id="speech-result-text"></div>
+    <button class="speech-hint-btn" onclick="previewWord()">もう一度手本を聞く 🔊</button>
+  </div>
+  <button class="btn btn-secondary" style="margin-top:12px;" onclick="showIntro()">← 戻る</button>
 </div>
 
 <!-- STEP RESULT -->
@@ -452,6 +498,7 @@ function startStep(step){
   G.step=step;G.idx=0;G.correct=0;G.streak=0;G.best=0;G.flipped=false;
   if(step===1){G.words=getStageWords(G.stage);showScreen('step1');loadFlash();}
   else if(step===2){showScreen('step2');loadQuiz();}
+  else if(step===4){showScreen('step4');loadSpeech();}
   else{showScreen('step3');loadTyping();}
 }
 
@@ -561,31 +608,152 @@ function checkTyping(){
 }
 
 // ===== STEP RESULT =====
+// 全問正解（パーフェクト）のみ次へ進める
 function showStepResult(step){
   G.scores[step-1]=G.correct;
-  const total=G.words.length,pct=Math.round(G.correct/total*100);
-  const stars=pct>=90?3:pct>=60?2:1;
+  const total=G.words.length;
+  const perfect=G.correct===total;
   document.getElementById('sr-score').textContent=G.correct+'/'+total;
   document.getElementById('sr-correct').textContent=G.correct;
   document.getElementById('sr-streak').textContent=G.best;
-  document.getElementById('sr-star-val').textContent='⭐'+stars;
-  document.getElementById('sr-stars').textContent='⭐'.repeat(stars);
+  document.getElementById('sr-star-val').textContent=perfect?'⭐⭐⭐':'--';
+  document.getElementById('sr-stars').textContent=perfect?'⭐⭐⭐':'💦';
+
   let t,s;
-  if(pct===100){t='🎉 パーフェクト！';s='りゅうちゃん完璧すぎ！！';}
-  else if(pct>=80){t='😊 よくできた！';s='かなりいい感じ！次もがんばろう！';}
-  else if(pct>=60){t='😄 もう少し！';s='練習するほど上手くなるよ！';}
-  else{t='💪 ファイト！';s='もう一度チャレンジしてみよう！';}
+  if(!perfect){
+    const miss=total-G.correct;
+    t='😢 もう一度！';
+    s=miss+'問まちがえたよ！全問正解で次へ進もう！';
+  } else {
+    t='🎉 パーフェクト！';
+    s='りゅうちゃん完璧すぎ！！さすが！';
+  }
   document.getElementById('sr-title').textContent=t;
   document.getElementById('sr-sub').textContent=s;
+
   const nb=document.getElementById('sr-next');
-  if(step<3){nb.textContent='STEP '+(step+1)+' へ進む →';nb.onclick=()=>startStep(step+1);}
-  else{
-    nb.textContent='🏆 ステージクリア！';nb.onclick=()=>showStageClear();
+  if(!perfect){
+    nb.textContent='🔄 もう一度チャレンジ！';
+    nb.style.background='linear-gradient(135deg,var(--accent2),#ee5a24)';
+    nb.onclick=()=>startStep(step);
+  } else if(step<4){
+    nb.textContent='STEP '+(step+1)+' へ進む →';
+    nb.style.background='linear-gradient(135deg,var(--accent3),#0abde3)';
+    nb.onclick=()=>startStep(step+1);
+  } else {
+    nb.textContent='🏆 ステージクリア！';
+    nb.style.background='linear-gradient(135deg,var(--accent),#ff9f43)';
+    nb.onclick=()=>showStageClear();
     const info=getInfo(G.stage);
-    save.sd[G.stage]={cleared:true,stars:Math.max(stars,info.stars||0),score:G.scores.reduce((a,b)=>a+b,0)};
+    save.sd[G.stage]={cleared:true,stars:3,score:G.scores.reduce((a,b)=>a+b,0)};
     writeSave(save);
+    stopMic();
   }
   showScreen('step-result');
+}
+
+
+// ===== STEP4 発音チェック =====
+let recognition=null;
+let speechListening=false;
+
+function loadSpeech(){
+  G.idx=0;G.correct=0;G.streak=0;G.best=0;
+  showSpeechQ();
+}
+
+function showSpeechQ(){
+  const w=G.words[G.idx];
+  document.getElementById('speech-en-show').textContent=w.en;   // ★英単語を大きく表示
+  document.getElementById('speech-jp-hint').textContent='（'+w.jp+'）'; // 日本語は小さくヒントとして
+  document.getElementById('speech-status').textContent='マイクボタンを押して話してね';
+  document.getElementById('speech-result-text').textContent='';
+  document.getElementById('mic-btn').classList.remove('listening');
+  document.getElementById('mic-btn').textContent='🎤';
+  updateRing('ring4','ring4-num',G.idx,G.words.length);
+  speechListening=false;
+  // 自動で手本発音
+  setTimeout(()=>speak(w.en),400);
+}
+
+function previewWord(){
+  speak(G.words[G.idx].en);
+}
+
+function toggleMic(){
+  if(speechListening){stopMic();return;}
+  startMic();
+}
+
+function startMic(){
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SpeechRecognition){
+    alert('お使いのブラウザは音声認識に対応していません。\nChromeをお試しください。');
+    return;
+  }
+  recognition=new SpeechRecognition();
+  recognition.lang='en-US';
+  recognition.interimResults=false;
+  recognition.maxAlternatives=5;
+  speechListening=true;
+  document.getElementById('mic-btn').classList.add('listening');
+  document.getElementById('mic-btn').textContent='⏹';
+  document.getElementById('speech-status').textContent='聞いています...話してね！';
+  document.getElementById('speech-result-text').textContent='';
+
+  recognition.onresult=(e)=>{
+    const w=G.words[G.idx];
+    // 複数候補をすべてチェック
+    let heard='';
+    let matched=false;
+    for(let i=0;i<e.results[0].length;i++){
+      const candidate=e.results[0][i].transcript.trim().toLowerCase();
+      if(i===0) heard=candidate;
+      if(candidate===w.en.toLowerCase()){matched=true;break;}
+      // 部分一致も許容（短い単語対策）
+      if(candidate.includes(w.en.toLowerCase())||w.en.toLowerCase().includes(candidate)){
+        if(candidate.length>=2) matched=true;
+      }
+    }
+    stopMic();
+    document.getElementById('speech-result-text').textContent='「'+heard+'」';
+    if(matched){
+      G.correct++;G.streak++;G.best=Math.max(G.best,G.streak);
+      showFB(true,w,()=>{
+        G.idx++;
+        if(G.idx>=G.words.length) showStepResult(4);
+        else showSpeechQ();
+      });
+    } else {
+      G.streak=0;
+      showFB(false,w,()=>{
+        G.idx++;
+        if(G.idx>=G.words.length) showStepResult(4);
+        else showSpeechQ();
+      });
+    }
+  };
+
+  recognition.onerror=(e)=>{
+    stopMic();
+    if(e.error==='no-speech'){
+      document.getElementById('speech-status').textContent='声が聞こえなかったよ。もう一度！';
+    } else if(e.error==='not-allowed'){
+      document.getElementById('speech-status').textContent='マイクの使用を許可してね！';
+    } else {
+      document.getElementById('speech-status').textContent='もう一度試してね！';
+    }
+  };
+
+  recognition.onend=()=>{ stopMic(); };
+  recognition.start();
+}
+
+function stopMic(){
+  speechListening=false;
+  document.getElementById('mic-btn').classList.remove('listening');
+  document.getElementById('mic-btn').textContent='🎤';
+  if(recognition){try{recognition.stop();}catch(e){}recognition=null;}
 }
 
 // ===== STAGE CLEAR =====
