@@ -317,7 +317,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
   <div style="padding-top:10px;"></div>
   <div class="result-banner">
     <div class="result-title" id="sr-title">CLEAR!</div>
-    <div class="result-sub-msg" id="sr-sub">りゅうちゃんすごい！</div>
+    <div class="result-sub-msg" id="sr-sub">りゅうちゃん、ほんまにすごいわ！</div>
     <div class="result-score" id="sr-score">0/10</div>
     <div class="result-stars-big" id="sr-stars">⭐⭐⭐</div>
   </div>
@@ -335,7 +335,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-
   <div class="clear-wrap">
     <div class="clear-trophy">🏆</div>
     <div class="clear-title">STAGE CLEAR!</div>
-    <div style="font-size:13px;color:var(--text3);margin-top:4px;">りゅうちゃん最高すぎる！！</div>
+    <div style="font-size:13px;color:var(--text3);margin-top:4px;">りゅうちゃん、ほんまに最高やで！！</div>
   </div>
   <div class="clear-card">
     <div style="font-size:32px;font-weight:900;color:var(--accent);" id="sc-stage">STAGE 1</div>
@@ -427,11 +427,28 @@ function initS(){if(sReady||!window.speechSynthesis)return;const u=new SpeechSyn
 document.addEventListener('touchstart',initS,{once:true});
 document.addEventListener('click',initS,{once:true});
 function speak(t,cb){if(!window.speechSynthesis){if(cb)cb();return;}window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=0.82;if(cb)u.onend=cb;window.speechSynthesis.speak(u);}
-function speakJP(t){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ja-JP';window.speechSynthesis.speak(u);}
+function speakJP(t){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ja-JP';u.rate=0.88;u.pitch=1.1;window.speechSynthesis.speak(u);}
 
 // ===== フィードバック =====
-const CM=[{e:"🎉",m:"りゅうちゃんスゴイ！"},{e:"🌟",m:"りゅうちゃん天才！"},{e:"🔥",m:"りゅうちゃんその調子！"},{e:"⚡",m:"パーフェクト！最高！"},{e:"🏆",m:"りゅうちゃん強すぎる！"},{e:"😎",m:"カッコよすぎ！！"},{e:"✨",m:"すごすぎる！完璧！"},{e:"🚀",m:"りゅうちゃん無敵！"}];
-const WM=[{e:"💪",m:"もう一回！絶対できる！"},{e:"😤",m:"ドンマイ！次いこ！"},{e:"🔄",m:"もう一度チャレンジ！"},{e:"✊",m:"ファイト！まだまだ！"}];
+const CM=[
+  {e:"🎉", m:"りゅうちゃん、めっちゃすごいやん！"},
+  {e:"🌟", m:"りゅうちゃん、ほんまに天才やわ！"},
+  {e:"🔥", m:"その調子や！どんどんいこ！"},
+  {e:"⚡", m:"完璧やん！さすがりゅうちゃんや！"},
+  {e:"🏆", m:"りゅうちゃん、強すぎてもうてるわ！"},
+  {e:"😎", m:"かっこよすぎるわ、りゅうちゃん！"},
+  {e:"✨", m:"もう止まらんな、りゅうちゃん！"},
+  {e:"🚀", m:"りゅうちゃん、無敵すぎるやろ！"},
+  {e:"🌈", m:"やるやん！さすがやで！"},
+  {e:"💫", m:"りゅうちゃん、ほんまかっこええわ！"}
+];
+const WM=[
+  {e:"💪", m:"ドンマイやで！もう一回いってみ！"},
+  {e:"😤", m:"惜しかったな！次は絶対いけるで！"},
+  {e:"🔄", m:"もう一回チャレンジしてみ！"},
+  {e:"✊", m:"ファイトやで、りゅうちゃん！"},
+  {e:"🌟", m:"大丈夫、大丈夫！もう一回！"}
+];
 let fbCb=null;
 function showFB(ok,w,cb){
   fbCb=cb;
@@ -623,10 +640,10 @@ function showStepResult(step){
   if(!perfect){
     const miss=total-G.correct;
     t='😢 もう一度！';
-    s=miss+'問まちがえたよ！全問正解で次へ進もう！';
+    s=miss+'問まちがえたで！全問正解で次へ行けるで！';
   } else {
     t='🎉 パーフェクト！';
-    s='りゅうちゃん完璧すぎ！！さすが！';
+    s='完璧やん！りゅうちゃん、ほんまにすごいわ！';
   }
   document.getElementById('sr-title').textContent=t;
   document.getElementById('sr-sub').textContent=s;
@@ -766,7 +783,7 @@ function showStageClear(){
     el.textContent=w.en+' '+w.jp;  // ★英語＋日本語
     wl.appendChild(el);
   });
-  speakJP('ステージクリア！りゅうちゃん最高！');
+  speakJP('やったー！ステージクリアやで！りゅうちゃん、ほんまにすごいわ！');
   showScreen('stage-clear');
 }
 function nextStage(){if(G.stage<STAGES)showIntro(G.stage+1);else showHome();}
