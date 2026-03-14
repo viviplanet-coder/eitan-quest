@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>⚡ えいたんQUEST - りゅうちゃんの英単語大冒険</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0f0c29;
+  --bg2:#1a1a4e;
+  --card:#ffffff12;
+  --card2:#ffffff20;
+  --accent:#f7b731;
+  --accent2:#ff6b6b;
+  --accent3:#48dbfb;
+  --accent4:#1dd1a1;
+  --text:#ffffff;
+  --text2:#ffffffcc;
+  --text3:#ffffff88;
+  --radius:18px;
+  --shadow:0 8px 32px #0006;
+}
+body{
+  font-family:'Nunito',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+.bg-stars{
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse at 20% 20%, #2d1b6940 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, #1a3a6940 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 10%, #6b21a820 0%, transparent 50%);
+  pointer-events:none;z-index:0;
+}
+#app{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:12px;min-height:100vh;}
+
+.screen{display:none;animation:fadeIn .3s ease;}
+.screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+.game-header{text-align:center;padding:20px 0 8px;}
+.logo{font-size:28px;font-weight:900;letter-spacing:-1px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2),var(--accent3));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.logo-sub{font-size:13px;color:var(--text3);margin-top:2px;font-family:'M PLUS Rounded 1c',sans-serif;}
+
+.world-label{font-size:12px;font-weight:800;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin:20px 0 8px 4px;}
+.stage-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:20px;}
+.stage-btn{
+  aspect-ratio:1;border-radius:14px;border:none;cursor:pointer;
+  font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;
+  transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden;
+}
+.stage-btn:active{transform:scale(.93);}
+.stage-btn.locked{background:#ffffff18;color:#ffffff40;cursor:not-allowed;}
+.stage-btn.cleared{background:linear-gradient(135deg,var(--accent4),#0abde3);color:#fff;box-shadow:0 4px 16px #1dd1a140;}
+.stage-btn.current{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 20px #f7b73160;animation:pulse .8s ease-in-out infinite alternate;}
+.stage-btn.available{background:var(--card2);color:var(--text2);border:1.5px solid #ffffff30;}
+@keyframes pulse{from{box-shadow:0 4px 20px #f7b73160}to{box-shadow:0 4px 32px #f7b731aa}}
+.stage-stars{position:absolute;bottom:2px;right:4px;font-size:9px;}
+.total-stars{
+  background:var(--card);backdrop-filter:blur(8px);
+  border:1px solid #ffffff20;border-radius:var(--radius);
+  padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:12px;
+}
+.total-stars-icon{font-size:28px;}
+.total-stars-info .val{font-size:22px;font-weight:900;color:var(--accent);}
+.total-stars-info .lbl{font-size:12px;color:var(--text3);}
+
+.stage-intro-card{
+  background:var(--card);backdrop-filter:blur(12px);
+  border:1px solid #ffffff20;border-radius:24px;
+  padding:28px 20px;text-align:center;margin:20px 0;
+}
+.stage-num{font-size:13px;color:var(--accent);font-weight:800;letter-spacing:2px;margin-bottom:4px;}
+.stage-title{font-size:22px;font-weight:900;margin-bottom:16px;}
+.step-badges{display:flex;gap:10px;justify-content:center;margin:16px 0;}
+.step-badge{flex:1;padding:10px 8px;border-radius:12px;text-align:center;font-size:12px;font-weight:700;}
+.step-badge.s1{background:#48dbfb22;border:1.5px solid var(--accent3);color:var(--accent3);}
+.step-badge.s2{background:#f7b73122;border:1.5px solid var(--accent);color:var(--accent);}
+.step-badge.s3{background:#ff6b6b22;border:1.5px solid var(--accent2);color:var(--accent2);}
+.step-badge-icon{font-size:20px;display:block;margin-bottom:4px;}
+
+.btn{display:block;width:100%;padding:16px;border:none;border-radius:var(--radius);font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;cursor:pointer;transition:transform .12s,box-shadow .12s;text-align:center;}
+.btn:active{transform:scale(.97);}
+.btn-start{background:linear-gradient(135deg,var(--accent),#ff9f43);color:#1a1a0a;box-shadow:0 6px 24px #f7b73150;margin-bottom:10px;}
+.btn-back{background:#ffffff18;color:var(--text2);font-size:14px;padding:12px;}
+
+.step-header{display:flex;align-items:center;justify-content:space-between;padding:8px 0 12px;}
+.step-label{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;font-size:13px;font-weight:800;}
+.step-label.s1{background:#48dbfb22;color:var(--accent3);border:1px solid var(--accent3)66;}
+.step-label.s2{background:#f7b73122;color:var(--accent);border:1px solid var(--accent)66;}
+.step-label.s3{background:#ff6b6b22;color:var(--accent2);border:1px solid var(--accent2)66;}
+.progress-ring{position:relative;width:44px;height:44px;}
+.progress-ring svg{transform:rotate(-90deg);}
+.progress-ring .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:var(--text);}
+
+.flash-wrap{perspective:1000px;margin:12px 0;cursor:pointer;}
+.flash-card{background:var(--card);backdrop-filter:blur(12px);border:1px solid #ffffff25;border-radius:24px;padding:32px 20px;text-align:center;min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .5s;transform-style:preserve-3d;position:relative;}
+.flash-card.flipped{transform:rotateY(180deg);}
+.flash-face,.flash-back-face{position:absolute;inset:0;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:24px;padding:28px 20px;}
+.flash-back-face{transform:rotateY(180deg);background:linear-gradient(135deg,#1dd1a122,#48dbfb22);border:1px solid var(--accent3)66;}
+.tap-hint{font-size:12px;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:4px;}
+.word-en{font-size:38px;font-weight:900;letter-spacing:1px;color:var(--text);margin-bottom:8px;}
+.word-jp{font-size:26px;font-weight:800;color:var(--accent3);margin-bottom:8px;}
+.word-cat{font-size:12px;color:var(--text3);background:#ffffff14;padding:3px 12px;border-radius:99px;}
+.speak-btn{background:linear-gradient(135deg,var(--accent3),#0abde3);border:none;border-radius:99px;padding:10px 20px;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;color:#0a2a40;cursor:pointer;margin-top:12px;transition:transform .12s;display:inline-flex;align-items:center;gap:6px;}
+.speak-btn:active{transform:scale(.95);}
+.flash-nav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.flash-knew{background:linear-gradient(135deg,var(--accent4),#0abde3);color:#fff;border:none;border-radius:var(--radius);padding:14px;font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;cursor:pointer;transition:transform .12s;}
+.flash-knew:active{transform:scale(.96);}
+.flash-retry{background:#ffffff18;color:var(--text2);border:none;border-radius:var(--radius);padding:14px;font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;cursor:pointer;}
+.flash-counter{font-size:13px;color:var(--text3);text-align:center;margin-top:8px;}
+
+.quiz-question{background:var(--card);backdrop-filter:blur(12px);border:1px solid #ffffff20;border-radius:24px;padding:28px 16px;text-align:center;margin:8px 0 16px;}
+.quiz-instruction{font-size:13px;color:var(--text3);margin-bottom:8px;}
+.quiz-play-btn{background:linear-gradient(135deg,var(--accent),#ff9f43);border:none;border-radius:99px;padding:14px 32px;font-family:'Nunito',sans-serif;font-weight:900;font-size:18px;color:#1a1a0a;cursor:pointer;transition:transform .12s,box-shadow .12s;display:inline-flex;align-items:center;gap:8px;box-shadow:0 6px 24px #f7b73140;}
+.quiz-play-btn:active{transform:scale(.95);}
+.quiz-play-btn.playing{animation:ripple 1s ease infinite;}
+@keyframes ripple{0%{box-shadow:0 0 0 0 #f7b73180}70%{box-shadow:0 0 0 16px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;}
+.choice{background:var(--card2);border:1.5px solid #ffffff25;border-radius:16px;padding:16px 10px;font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;color:var(--text);cursor:pointer;transition:all .12s;text-align:center;line-height:1.3;}
+.choice:active{transform:scale(.96);}
+.choice.correct{background:#1dd1a133;border-color:var(--accent4);color:var(--accent4);}
+.choice.wrong{background:#ff6b6b22;border-color:var(--accent2);color:var(--accent2);}
+.choice:disabled{cursor:default;}
+
+.typing-question{background:var(--card);backdrop-filter:blur(12px);border:1px solid #ffffff20;border-radius:24px;padding:24px 16px;text-align:center;margin:8px 0 12px;}
+.typing-jp{font-size:30px;font-weight:900;color:var(--accent);margin-bottom:8px;font-family:'M PLUS Rounded 1c',sans-serif;}
+.typing-display{background:#ffffff10;border:2px solid #ffffff30;border-radius:16px;padding:16px;font-size:28px;font-weight:900;letter-spacing:6px;text-align:center;min-height:64px;margin:10px 0;color:var(--text);font-family:monospace;}
+.keyboard{margin:8px 0;}
+.kb-row{display:flex;justify-content:center;gap:5px;margin-bottom:5px;}
+.kb-key{background:var(--card2);border:1px solid #ffffff30;border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-weight:700;font-size:16px;width:32px;height:40px;cursor:pointer;transition:all .1s;display:flex;align-items:center;justify-content:center;}
+.kb-key:active{transform:scale(.9);background:#ffffff35;}
+.kb-del{width:48px;font-size:13px;background:#ffffff28;}
+.kb-check{width:100%;padding:14px;margin-top:8px;background:linear-gradient(135deg,var(--accent2),#ee5a24);border:none;border-radius:var(--radius);font-family:'Nunito',sans-serif;font-weight:900;font-size:16px;color:#fff;cursor:pointer;transition:transform .12s;box-shadow:0 4px 20px #ff6b6b40;}
+.kb-check:active{transform:scale(.97);}
+
+.feedback-overlay{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000000aa;backdrop-filter:blur(4px);animation:fadeIn .2s ease;}
+.feedback-box{border-radius:28px;padding:36px 32px;text-align:center;max-width:300px;box-shadow:var(--shadow);}
+.feedback-box.correct-fb{background:linear-gradient(135deg,#1dd1a1,#0abde3);color:#fff;}
+.feedback-box.wrong-fb{background:linear-gradient(135deg,#ee5a24,#ff6b6b);color:#fff;}
+.feedback-emoji{font-size:56px;margin-bottom:12px;}
+.feedback-msg{font-size:22px;font-weight:900;margin-bottom:8px;line-height:1.2;}
+.feedback-word{font-size:16px;opacity:.9;margin-bottom:16px;}
+.feedback-next{background:#ffffff30;backdrop-filter:blur(4px);border:none;border-radius:12px;padding:12px 28px;font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;color:#fff;cursor:pointer;}
+
+.result-banner{background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:24px;padding:32px 20px;text-align:center;margin:16px 0;box-shadow:0 8px 32px #f7b73140;}
+.result-title{font-size:26px;font-weight:900;color:#1a0a00;margin-bottom:4px;}
+.result-subtitle{font-size:14px;color:#1a0a0088;}
+.result-score-big{font-size:60px;font-weight:900;color:#1a0a00;line-height:1;margin:12px 0 4px;}
+.result-stars{font-size:28px;margin:4px 0 16px;}
+.result-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:16px 0;}
+.result-stat{background:var(--card);border:1px solid #ffffff20;border-radius:16px;padding:12px 8px;text-align:center;}
+.result-stat .v{font-size:20px;font-weight:900;color:var(--accent);}
+.result-stat .l{font-size:11px;color:var(--text3);margin-top:2px;}
+.btn-next-step{background:linear-gradient(135deg,var(--accent3),#0abde3);color:#0a2a40;border:none;border-radius:var(--radius);width:100%;padding:16px;font-family:'Nunito',sans-serif;font-weight:900;font-size:16px;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 20px #48dbfb40;transition:transform .12s;}
+.btn-next-step:active{transform:scale(.97);}
+</style>
+</head>
+<body>
+<div class="bg-stars"></div>
+<div id="app">
+
+<!-- HOME -->
+<div id="home" class="screen active">
+  <div class="game-header">
+    <div class="logo">⚡ えいたん QUEST</div>
+    <div class="logo-sub">りゅうちゃんの英単語大冒険 500語マスターを目指せ！</div>
+  </div>
+  <div class="total-stars">
+    <div class="total-stars-icon">⭐</div>
+    <div class="total-stars-info">
+      <div class="val" id="home-stars">0</div>
+      <div class="lbl">総スター数 / <span id="home-cleared">0</span>ステージクリア</div>
+    </div>
+    <div style="margin-left:auto;text-align:right;">
+      <div style="font-size:13px;font-weight:700;color:var(--text2);" id="home-words">0<span style="font-size:11px;color:var(--text3);">/500語</span></div>
+    </div>
+  </div>
+  <div id="stages-container"></div>
+</div>
+
+<!-- STAGE INTRO -->
+<div id="intro" class="screen">
+  <div class="game-header">
+    <div class="logo">⚡ えいたん QUEST</div>
+  </div>
+  <div class="stage-intro-card">
+    <div class="stage-num" id="intro-num">STAGE 1</div>
+    <div class="stage-title" id="intro-title">はじめの一歩</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:12px;">このステージで覚える10語：</div>
+    <div id="intro-wordlist" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:16px;"></div>
+    <div class="step-badges">
+      <div class="step-badge s1"><span class="step-badge-icon">📖</span>STEP1<br><span style="font-size:10px;font-weight:400;">フラッシュ</span></div>
+      <div class="step-badge s2"><span class="step-badge-icon">🔊</span>STEP2<br><span style="font-size:10px;font-weight:400;">聞いて選ぶ</span></div>
+      <div class="step-badge s3"><span class="step-badge-icon">⌨️</span>STEP3<br><span style="font-size:10px;font-weight:400;">入力する</span></div>
+    </div>
+    <div id="intro-prev-score" style="font-size:13px;color:var(--accent);font-weight:700;margin-bottom:12px;"></div>
+  </div>
+  <button class="btn btn-start" onclick="startStep(1)">🚀 STAGE スタート！</button>
+  <button class="btn btn-back" onclick="showHome()">← ステージ選択に戻る</button>
+</div>
+
+<!-- STEP 1: FLASH -->
+<div id="step1" class="screen">
+  <div class="step-header">
+    <span class="step-label s1">📖 STEP 1 フラッシュ</span>
+    <div class="progress-ring">
+      <svg width="44" height="44" viewBox="0 0 44 44">
+        <circle cx="22" cy="22" r="18" fill="none" stroke="#ffffff18" stroke-width="4"/>
+        <circle cx="22" cy="22" r="18" fill="none" stroke="#48dbfb" stroke-width="4"
+          stroke-dasharray="113" stroke-dashoffset="113" id="ring1" stroke-linecap="round"/>
+      </svg>
+      <div class="num" id="ring1-num">0</div>
+    </div>
+  </div>
+  <div class="flash-wrap" id="flash-wrap" onclick="flipFlash()">
+    <div class="flash-card" id="flash-card">
+      <div class="flash-face">
+        <div class="tap-hint">👆 タップしてめくる</div>
+        <div class="word-en" id="flash-en">---</div>
+        <div class="word-cat" id="flash-cat">---</div>
+        <button class="speak-btn" onclick="event.stopPropagation();speakWord()">🔊 発音を聞く</button>
+      </div>
+      <div class="flash-back-face">
+        <div class="word-en" id="flash-en2" style="font-size:26px;color:var(--accent3);">---</div>
+        <div class="word-jp" id="flash-jp">---</div>
+        <div class="word-cat" id="flash-cat2">---</div>
+        <button class="speak-btn" onclick="event.stopPropagation();speakWord()">🔊 もう一度聞く</button>
+      </div>
+    </div>
+  </div>
+  <div class="flash-counter" id="flash-counter">1 / 10</div>
+  <div class="flash-nav" id="flash-nav" style="display:none;">
+    <button class="flash-retry" onclick="flashNext(false)">😅 もう一回</button>
+    <button class="flash-knew" onclick="flashNext(true)">😊 覚えた！</button>
+  </div>
+  <button class="btn btn-back" style="margin-top:8px;" onclick="showIntro()">← 戻る</button>
+</div>
+
+<!-- STEP 2: QUIZ -->
+<div id="step2" class="screen">
+  <div class="step-header">
+    <span class="step-label s2">🔊 STEP 2 発音クイズ</span>
+    <div class="progress-ring">
+      <svg width="44" height="44" viewBox="0 0 44 44">
+        <circle cx="22" cy="22" r="18" fill="none" stroke="#ffffff18" stroke-width="4"/>
+        <circle cx="22" cy="22" r="18" fill="none" stroke="#f7b731" stroke-width="4"
+          stroke-dasharray="113" stroke-dashoffset="113" id="ring2" stroke-linecap="round"/>
+      </svg>
+      <div class="num" id="ring2-num">0</div>
+    </div>
+  </div>
+  <div class="quiz-question">
+    <div class="quiz-instruction">発音を聞いて、正しい英単語を選んでね</div>
+    <button class="quiz-play-btn" id="quiz-play-btn" onclick="playQuizWord()">🔊 再生</button>
+  </div>
+  <div class="choice-grid" id="choice-grid"></div>
+  <button class="btn btn-back" style="margin-top:12px;" onclick="showIntro()">← 戻る</button>
+</div>
+
+<!-- STEP 3: TYPING -->
+<div id="step3" class="screen">
+  <div class="step-header">
+    <span class="step-label s3">⌨️ STEP 3 入力クイズ</span>
+    <div class="progress-ring">
+      <svg width="44" height="44" viewBox="0 0 44 44">
+        <circle cx="22" cy="22" r="18" fill="none" stroke="#ffffff18" stroke-width="4"/>
+        <circle cx="22" cy="22" r="18" fill="none" stroke="#ff6b6b" stroke-width="4"
+          stroke-dasharray="113" stroke-dashoffset="113" id="ring3" stroke-linecap="round"/>
+      </svg>
+      <div class="num" id="ring3-num">0</div>
+    </div>
+  </div>
+  <div class="typing-question">
+    <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">この日本語を英語で入力しよう</div>
+    <div class="typing-jp" id="typing-jp">---</div>
+    <div id="typing-hint" style="font-size:12px;color:var(--text3);margin-top:4px;"></div>
+  </div>
+  <div class="typing-display" id="typing-display">_</div>
+  <div class="keyboard" id="keyboard"></div>
+  <button class="kb-check" id="kb-check" onclick="checkTyping()">✓ 答える</button>
+  <button class="btn btn-back" style="margin-top:8px;" onclick="showIntro()">← 戻る</button>
+</div>
+
+<!-- STEP RESULT -->
+<div id="step-result" class="screen">
+  <div style="padding-top:12px;"></div>
+  <div class="result-banner">
+    <div class="result-title" id="sr-title">CLEAR!</div>
+    <div class="result-subtitle" id="sr-sub">すごいぞりゅうちゃん！</div>
+    <div class="result-score-big" id="sr-score">10/10</div>
+    <div class="result-stars" id="sr-stars">⭐⭐⭐</div>
+  </div>
+  <div class="result-grid">
+    <div class="result-stat"><div class="v" id="sr-correct">0</div><div class="l">正解数</div></div>
+    <div class="result-stat"><div class="v" id="sr-streak">0</div><div class="l">最高連続</div></div>
+    <div class="result-stat"><div class="v" id="sr-stars2">⭐0</div><div class="l">スター</div></div>
+  </div>
+  <button class="btn-next-step" id="sr-next-btn">次へ進む →</button>
+  <button class="btn btn-back" onclick="showHome()">🏠 ステージ選択に戻る</button>
+</div>
+
+<!-- STAGE CLEAR -->
+<div id="stage-clear" class="screen">
+  <div style="padding-top:20px;text-align:center;">
+    <div style="font-size:64px;margin-bottom:8px;">🏆</div>
+    <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">STAGE CLEAR!</div>
+    <div style="font-size:14px;color:var(--text3);margin-top:4px;">りゅうちゃん最高すぎる！！</div>
+  </div>
+  <div style="background:var(--card);border:1px solid #ffffff20;border-radius:24px;padding:24px;margin:20px 0;text-align:center;">
+    <div style="font-size:36px;font-weight:900;color:var(--accent);" id="sc-stage">STAGE 1</div>
+    <div style="font-size:18px;margin:8px 0;" id="sc-stars">⭐⭐⭐</div>
+    <div style="font-size:14px;color:var(--text3);">この10語をマスター！</div>
+    <div id="sc-wordlist" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:12px;"></div>
+  </div>
+  <button class="btn btn-start" onclick="nextStage()">次のステージへ ⚡</button>
+  <button class="btn btn-back" onclick="showHome()">🏠 ステージ選択に戻る</button>
+</div>
+
+<!-- FEEDBACK OVERLAY -->
+<div id="feedback-overlay" class="feedback-overlay" style="display:none;" onclick="hideFeedback()">
+  <div class="feedback-box" id="feedback-box">
+    <div class="feedback-emoji" id="fb-emoji">🎉</div>
+    <div class="feedback-msg" id="fb-msg">りゅうちゃんスゴイ！</div>
+    <div class="feedback-word" id="fb-word"></div>
+    <button class="feedback-next">つぎへ →</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+const ALL_WORDS = [
+  {en:"apple",jp:"りんご",cat:"食べ物"},{en:"book",jp:"本",cat:"学校"},{en:"cat",jp:"ねこ",cat:"動物"},{en:"dog",jp:"いぬ",cat:"動物"},{en:"egg",jp:"たまご",cat:"食べ物"},{en:"fish",jp:"さかな",cat:"動物"},{en:"good",jp:"よい",cat:"形容詞"},{en:"hand",jp:"手",cat:"体"},{en:"ink",jp:"インク",cat:"学校"},{en:"jump",jp:"とぶ",cat:"動詞"},
+  {en:"king",jp:"王様",cat:"人"},{en:"lion",jp:"ライオン",cat:"動物"},{en:"milk",jp:"ミルク",cat:"飲み物"},{en:"nose",jp:"鼻",cat:"体"},{en:"open",jp:"開ける",cat:"動詞"},{en:"pig",jp:"ぶた",cat:"動物"},{en:"queen",jp:"女王",cat:"人"},{en:"rain",jp:"雨",cat:"天気"},{en:"sun",jp:"太陽",cat:"自然"},{en:"tree",jp:"木",cat:"自然"},
+  {en:"up",jp:"上へ",cat:"方向"},{en:"van",jp:"バン",cat:"乗り物"},{en:"water",jp:"水",cat:"飲み物"},{en:"box",jp:"はこ",cat:"物"},{en:"year",jp:"年",cat:"時間"},{en:"zoo",jp:"動物園",cat:"場所"},{en:"arm",jp:"うで",cat:"体"},{en:"bus",jp:"バス",cat:"乗り物"},{en:"cup",jp:"カップ",cat:"物"},{en:"day",jp:"日",cat:"時間"},
+  {en:"ear",jp:"耳",cat:"体"},{en:"fan",jp:"扇風機",cat:"物"},{en:"girl",jp:"女の子",cat:"人"},{en:"hat",jp:"ぼうし",cat:"衣類"},{en:"ice",jp:"こおり",cat:"自然"},{en:"jam",jp:"ジャム",cat:"食べ物"},{en:"key",jp:"かぎ",cat:"物"},{en:"leg",jp:"足",cat:"体"},{en:"map",jp:"地図",cat:"学校"},{en:"net",jp:"あみ",cat:"物"},
+  {en:"old",jp:"古い",cat:"形容詞"},{en:"pen",jp:"ペン",cat:"学校"},{en:"red",jp:"赤",cat:"色"},{en:"sea",jp:"海",cat:"自然"},{en:"ten",jp:"10",cat:"数"},{en:"use",jp:"使う",cat:"動詞"},{en:"vet",jp:"獣医",cat:"職業"},{en:"web",jp:"ウェブ",cat:"物"},{en:"six",jp:"6",cat:"数"},{en:"yes",jp:"はい",cat:"返事"},
+  {en:"bed",jp:"ベッド",cat:"家具"},{en:"car",jp:"車",cat:"乗り物"},{en:"dad",jp:"おとうさん",cat:"家族"},{en:"eat",jp:"食べる",cat:"動詞"},{en:"fly",jp:"とぶ",cat:"動詞"},{en:"get",jp:"もらう",cat:"動詞"},{en:"hot",jp:"あつい",cat:"形容詞"},{en:"ill",jp:"病気の",cat:"形容詞"},{en:"job",jp:"仕事",cat:"職業"},{en:"kid",jp:"子ども",cat:"人"},
+  {en:"lot",jp:"たくさん",cat:"副詞"},{en:"mom",jp:"おかあさん",cat:"家族"},{en:"new",jp:"新しい",cat:"形容詞"},{en:"oak",jp:"オーク",cat:"自然"},{en:"pat",jp:"軽くたたく",cat:"動詞"},{en:"run",jp:"走る",cat:"動詞"},{en:"sad",jp:"悲しい",cat:"形容詞"},{en:"tan",jp:"日焼け",cat:"色"},{en:"urn",jp:"つぼ",cat:"物"},{en:"win",jp:"かつ",cat:"動詞"},
+  {en:"ask",jp:"たずねる",cat:"動詞"},{en:"bat",jp:"バット",cat:"スポーツ"},{en:"cut",jp:"切る",cat:"動詞"},{en:"dig",jp:"ほる",cat:"動詞"},{en:"end",jp:"おわり",cat:"名詞"},{en:"fix",jp:"なおす",cat:"動詞"},{en:"got",jp:"もらった",cat:"動詞"},{en:"hit",jp:"うつ",cat:"動詞"},{en:"mix",jp:"まぜる",cat:"動詞"},{en:"jog",jp:"ゆっくり走る",cat:"動詞"},
+  {en:"lip",jp:"くちびる",cat:"体"},{en:"mad",jp:"怒った",cat:"形容詞"},{en:"nap",jp:"昼寝",cat:"動詞"},{en:"odd",jp:"奇数の",cat:"形容詞"},{en:"pay",jp:"支払う",cat:"動詞"},{en:"rag",jp:"ぼろ",cat:"物"},{en:"sit",jp:"座る",cat:"動詞"},{en:"tap",jp:"たたく",cat:"動詞"},{en:"wet",jp:"ぬれた",cat:"形容詞"},{en:"fox",jp:"きつね",cat:"動物"},
+  {en:"big",jp:"大きい",cat:"形容詞"},{en:"can",jp:"できる",cat:"動詞"},{en:"did",jp:"した",cat:"動詞"},{en:"far",jp:"遠い",cat:"形容詞"},{en:"him",jp:"かれ",cat:"代名詞"},{en:"its",jp:"それの",cat:"代名詞"},{en:"low",jp:"低い",cat:"形容詞"},{en:"nor",jp:"～でもない",cat:"接続詞"},{en:"own",jp:"自分の",cat:"形容詞"},{en:"put",jp:"おく",cat:"動詞"},
+  {en:"say",jp:"言う",cat:"動詞"},{en:"try",jp:"ためす",cat:"動詞"},{en:"ago",jp:"～前に",cat:"副詞"},{en:"aim",jp:"目標",cat:"名詞"},{en:"bay",jp:"湾",cat:"自然"},{en:"cab",jp:"タクシー",cat:"乗り物"},{en:"dam",jp:"ダム",cat:"建物"},{en:"elf",jp:"妖精",cat:"キャラ"},{en:"fit",jp:"合う",cat:"動詞"},{en:"gap",jp:"すきま",cat:"名詞"},
+  {en:"hay",jp:"干し草",cat:"自然"},{en:"ivy",jp:"ツタ",cat:"自然"},{en:"jaw",jp:"あご",cat:"体"},{en:"kit",jp:"道具セット",cat:"物"},{en:"lay",jp:"置く",cat:"動詞"},{en:"mud",jp:"どろ",cat:"自然"},{en:"nod",jp:"うなずく",cat:"動詞"},{en:"ore",jp:"鉱石",cat:"自然"},{en:"pod",jp:"さや",cat:"自然"},{en:"rib",jp:"ろっこつ",cat:"体"},
+  {en:"sap",jp:"樹液",cat:"自然"},{en:"tub",jp:"おけ",cat:"物"},{en:"vow",jp:"ちかい",cat:"名詞"},{en:"wax",jp:"ろう",cat:"物"},{en:"yam",jp:"ヤム芋",cat:"食べ物"},{en:"ace",jp:"エース",cat:"スポーツ"},{en:"age",jp:"年齢",cat:"名詞"},{en:"ale",jp:"エール",cat:"飲み物"},{en:"ape",jp:"類人猿",cat:"動物"},{en:"arc",jp:"弧",cat:"形"},
+  {en:"beg",jp:"たのむ",cat:"動詞"},{en:"bid",jp:"値をつける",cat:"動詞"},{en:"bog",jp:"沼地",cat:"自然"},{en:"bow",jp:"おじぎ",cat:"動詞"},{en:"bud",jp:"つぼみ",cat:"自然"},{en:"bug",jp:"虫",cat:"動物"},{en:"bun",jp:"パン",cat:"食べ物"},{en:"cob",jp:"とうもろこし芯",cat:"食べ物"},{en:"cod",jp:"タラ",cat:"動物"},{en:"cog",jp:"歯車",cat:"物"},
+  {en:"cop",jp:"警察官",cat:"職業"},{en:"cot",jp:"簡易ベッド",cat:"家具"},{en:"cub",jp:"子グマ",cat:"動物"},{en:"cud",jp:"反芻食物",cat:"動物"},{en:"dab",jp:"軽くたたく",cat:"動詞"},{en:"den",jp:"書斎",cat:"部屋"},{en:"dew",jp:"露",cat:"自然"},{en:"dim",jp:"薄暗い",cat:"形容詞"},{en:"dip",jp:"つける",cat:"動詞"},{en:"dot",jp:"点",cat:"形"},
+  {en:"dove",jp:"はと",cat:"動物"},{en:"dusk",jp:"夕暮れ",cat:"時間"},{en:"dust",jp:"ほこり",cat:"物"},{en:"fade",jp:"色あせる",cat:"動詞"},{en:"fake",jp:"にせ",cat:"形容詞"},{en:"fame",jp:"名声",cat:"名詞"},{en:"farm",jp:"農場",cat:"場所"},{en:"fast",jp:"はやい",cat:"形容詞"},{en:"fate",jp:"運命",cat:"名詞"},{en:"fear",jp:"おそれ",cat:"名詞"},
+  {en:"feel",jp:"感じる",cat:"動詞"},{en:"feet",jp:"足",cat:"体"},{en:"fell",jp:"倒れた",cat:"動詞"},{en:"felt",jp:"感じた",cat:"動詞"},{en:"fern",jp:"シダ",cat:"自然"},{en:"firm",jp:"固い",cat:"形容詞"},{en:"fist",jp:"こぶし",cat:"体"},{en:"flag",jp:"旗",cat:"物"},{en:"flat",jp:"平らな",cat:"形容詞"},{en:"flew",jp:"とんだ",cat:"動詞"},
+  {en:"flip",jp:"ひっくり返す",cat:"動詞"},{en:"frog",jp:"カエル",cat:"動物"},{en:"from",jp:"～から",cat:"前置詞"},{en:"fuel",jp:"燃料",cat:"物"},{en:"full",jp:"いっぱい",cat:"形容詞"},{en:"fund",jp:"基金",cat:"名詞"},{en:"fuse",jp:"ヒューズ",cat:"物"},{en:"gale",jp:"強風",cat:"天気"},{en:"game",jp:"ゲーム",cat:"娯楽"},{en:"gate",jp:"門",cat:"建物"},
+  {en:"gave",jp:"あげた",cat:"動詞"},{en:"gaze",jp:"見つめる",cat:"動詞"},{en:"glow",jp:"輝く",cat:"動詞"},{en:"glue",jp:"のり",cat:"物"},{en:"gust",jp:"突風",cat:"天気"},{en:"hail",jp:"ひょう",cat:"天気"},{en:"hair",jp:"かみのけ",cat:"体"},{en:"hall",jp:"ホール",cat:"建物"},{en:"halt",jp:"止まる",cat:"動詞"},{en:"harm",jp:"害",cat:"名詞"},
+  {en:"harp",jp:"ハープ",cat:"音楽"},{en:"have",jp:"持つ",cat:"動詞"},{en:"hawk",jp:"タカ",cat:"動物"},{en:"heal",jp:"なおす",cat:"動詞"},{en:"heap",jp:"山積み",cat:"名詞"},{en:"hear",jp:"聞く",cat:"動詞"},{en:"heat",jp:"熱",cat:"名詞"},{en:"heel",jp:"かかと",cat:"体"},{en:"help",jp:"助ける",cat:"動詞"},{en:"herb",jp:"ハーブ",cat:"植物"},
+  {en:"here",jp:"ここに",cat:"副詞"},{en:"hide",jp:"かくれる",cat:"動詞"},{en:"high",jp:"高い",cat:"形容詞"},{en:"hill",jp:"丘",cat:"自然"},{en:"hint",jp:"ヒント",cat:"名詞"},{en:"hire",jp:"雇う",cat:"動詞"},{en:"hole",jp:"穴",cat:"名詞"},{en:"home",jp:"家",cat:"場所"},{en:"hood",jp:"フード",cat:"衣類"},{en:"hook",jp:"フック",cat:"物"},
+  {en:"hope",jp:"希望",cat:"名詞"},{en:"horn",jp:"つの",cat:"動物"},{en:"hose",jp:"ホース",cat:"物"},{en:"hour",jp:"時間",cat:"時間"},{en:"huge",jp:"巨大な",cat:"形容詞"},{en:"hull",jp:"船体",cat:"乗り物"},{en:"hump",jp:"こぶ",cat:"動物"},{en:"hunt",jp:"かる",cat:"動詞"},{en:"hurl",jp:"投げる",cat:"動詞"},{en:"hymn",jp:"賛美歌",cat:"音楽"},
+  {en:"idea",jp:"アイデア",cat:"名詞"},{en:"idle",jp:"のんびり",cat:"形容詞"},{en:"iris",jp:"アイリス",cat:"植物"},{en:"iron",jp:"鉄",cat:"物"},{en:"isle",jp:"島",cat:"自然"},{en:"itch",jp:"かゆい",cat:"形容詞"},{en:"jade",jp:"ヒスイ",cat:"物"},{en:"jail",jp:"刑務所",cat:"建物"},{en:"jest",jp:"冗談",cat:"名詞"},{en:"join",jp:"参加する",cat:"動詞"},
+  {en:"joke",jp:"冗談",cat:"名詞"},{en:"joy",jp:"よろこび",cat:"名詞"},{en:"judge",jp:"判断する",cat:"動詞"},{en:"just",jp:"ちょうど",cat:"副詞"},{en:"keen",jp:"熱心な",cat:"形容詞"},{en:"keep",jp:"保つ",cat:"動詞"},{en:"kick",jp:"けとばす",cat:"動詞"},{en:"kind",jp:"親切な",cat:"形容詞"},{en:"kiss",jp:"キス",cat:"動詞"},{en:"knee",jp:"ひざ",cat:"体"},
+  {en:"knit",jp:"編む",cat:"動詞"},{en:"knot",jp:"むすび目",cat:"名詞"},{en:"know",jp:"知っている",cat:"動詞"},{en:"lack",jp:"不足する",cat:"動詞"},{en:"lake",jp:"湖",cat:"自然"},{en:"lamb",jp:"子ひつじ",cat:"動物"},{en:"lamp",jp:"ランプ",cat:"物"},{en:"land",jp:"土地",cat:"自然"},{en:"lane",jp:"小道",cat:"場所"},{en:"lark",jp:"ひばり",cat:"動物"},
+  {en:"last",jp:"最後の",cat:"形容詞"},{en:"late",jp:"おそい",cat:"形容詞"},{en:"leaf",jp:"葉",cat:"自然"},{en:"lean",jp:"傾く",cat:"動詞"},{en:"leap",jp:"とびこむ",cat:"動詞"},{en:"left",jp:"左",cat:"方向"},{en:"lend",jp:"かす",cat:"動詞"},{en:"less",jp:"より少ない",cat:"副詞"},{en:"lick",jp:"なめる",cat:"動詞"},{en:"lift",jp:"持ち上げる",cat:"動詞"},
+  {en:"like",jp:"好き",cat:"動詞"},{en:"lime",jp:"ライム",cat:"食べ物"},{en:"line",jp:"線",cat:"名詞"},{en:"link",jp:"つなぐ",cat:"動詞"},{en:"list",jp:"リスト",cat:"名詞"},{en:"live",jp:"住む",cat:"動詞"},{en:"load",jp:"荷物",cat:"名詞"},{en:"lock",jp:"鍵をかける",cat:"動詞"},{en:"loft",jp:"屋根裏",cat:"場所"},{en:"long",jp:"長い",cat:"形容詞"},
+  {en:"look",jp:"見る",cat:"動詞"},{en:"loop",jp:"輪",cat:"名詞"},{en:"lore",jp:"伝承",cat:"名詞"},{en:"lose",jp:"まける",cat:"動詞"},{en:"love",jp:"愛",cat:"名詞"},{en:"luck",jp:"幸運",cat:"名詞"},{en:"lull",jp:"なだめる",cat:"動詞"},{en:"lung",jp:"肺",cat:"体"},{en:"lure",jp:"おびきよせる",cat:"動詞"},{en:"lush",jp:"青々した",cat:"形容詞"},
+  {en:"maid",jp:"メイド",cat:"職業"},{en:"mail",jp:"手紙",cat:"名詞"},{en:"main",jp:"主な",cat:"形容詞"},{en:"make",jp:"作る",cat:"動詞"},{en:"male",jp:"男性",cat:"名詞"},{en:"mall",jp:"モール",cat:"場所"},{en:"mane",jp:"たてがみ",cat:"動物"},{en:"mare",jp:"雌馬",cat:"動物"},{en:"mark",jp:"印",cat:"名詞"},{en:"mars",jp:"火星",cat:"宇宙"},
+  {en:"mask",jp:"マスク",cat:"物"},{en:"mass",jp:"かたまり",cat:"名詞"},{en:"mate",jp:"仲間",cat:"人"},{en:"maze",jp:"迷路",cat:"名詞"},{en:"mead",jp:"草地",cat:"自然"},{en:"meal",jp:"食事",cat:"食べ物"},{en:"mean",jp:"意味する",cat:"動詞"},{en:"meet",jp:"会う",cat:"動詞"},{en:"melt",jp:"とける",cat:"動詞"},{en:"mild",jp:"おだやか",cat:"形容詞"},
+  {en:"mind",jp:"心",cat:"名詞"},{en:"mine",jp:"私のもの",cat:"代名詞"},{en:"mint",jp:"ミント",cat:"植物"},{en:"miss",jp:"のがす",cat:"動詞"},{en:"mist",jp:"きり",cat:"天気"},{en:"mode",jp:"方法",cat:"名詞"},{en:"mole",jp:"モグラ",cat:"動物"},{en:"mood",jp:"気分",cat:"名詞"},{en:"moon",jp:"月",cat:"宇宙"},{en:"more",jp:"もっと多い",cat:"副詞"},
+  {en:"most",jp:"最も多い",cat:"副詞"},{en:"moth",jp:"が",cat:"動物"},{en:"move",jp:"動く",cat:"動詞"},{en:"much",jp:"たくさん",cat:"副詞"},{en:"mule",jp:"ラバ",cat:"動物"},{en:"muse",jp:"思索する",cat:"動詞"},{en:"musk",jp:"じゃこう",cat:"物"},{en:"must",jp:"しなければならない",cat:"動詞"},{en:"mute",jp:"無言の",cat:"形容詞"},{en:"myth",jp:"神話",cat:"名詞"},
+  {en:"nail",jp:"くぎ",cat:"物"},{en:"name",jp:"名前",cat:"名詞"},{en:"nape",jp:"うなじ",cat:"体"},{en:"near",jp:"近い",cat:"形容詞"},{en:"neat",jp:"きちんとした",cat:"形容詞"},{en:"neck",jp:"くび",cat:"体"},{en:"need",jp:"必要とする",cat:"動詞"},{en:"nest",jp:"巣",cat:"動物"},{en:"news",jp:"ニュース",cat:"名詞"},{en:"next",jp:"次の",cat:"形容詞"},
+  {en:"nice",jp:"すてきな",cat:"形容詞"},{en:"nine",jp:"9",cat:"数"},{en:"node",jp:"節",cat:"名詞"},{en:"none",jp:"なにもない",cat:"代名詞"},{en:"noon",jp:"正午",cat:"時間"},{en:"norm",jp:"基準",cat:"名詞"},{en:"note",jp:"メモ",cat:"名詞"},{en:"noun",jp:"名詞",cat:"学校"},{en:"nude",jp:"裸の",cat:"形容詞"},{en:"numb",jp:"しびれた",cat:"形容詞"},
+  {en:"oath",jp:"ちかい",cat:"名詞"},{en:"obey",jp:"したがう",cat:"動詞"},{en:"once",jp:"一度",cat:"副詞"},{en:"only",jp:"だけ",cat:"副詞"},{en:"oral",jp:"口頭の",cat:"形容詞"},{en:"orca",jp:"シャチ",cat:"動物"},{en:"oval",jp:"卵形",cat:"形"},{en:"oven",jp:"オーブン",cat:"家具"},{en:"over",jp:"上に",cat:"前置詞"},{en:"pace",jp:"歩調",cat:"名詞"},
+  {en:"pack",jp:"荷物",cat:"名詞"},{en:"page",jp:"ページ",cat:"名詞"},{en:"pain",jp:"痛み",cat:"名詞"},{en:"pair",jp:"一対",cat:"名詞"},{en:"pale",jp:"青白い",cat:"形容詞"},{en:"palm",jp:"手のひら",cat:"体"},{en:"park",jp:"公園",cat:"場所"},{en:"part",jp:"部分",cat:"名詞"},{en:"pass",jp:"通る",cat:"動詞"},{en:"past",jp:"過去",cat:"名詞"},
+  {en:"path",jp:"小道",cat:"場所"},{en:"peak",jp:"頂上",cat:"自然"},{en:"pear",jp:"なし",cat:"食べ物"},{en:"peat",jp:"泥炭",cat:"自然"},{en:"peel",jp:"むく",cat:"動詞"},{en:"peer",jp:"仲間",cat:"人"},{en:"peg",jp:"くい",cat:"物"},{en:"pelt",jp:"毛皮",cat:"物"},{en:"pest",jp:"害虫",cat:"動物"},{en:"pick",jp:"えらぶ",cat:"動詞"},
+  {en:"pier",jp:"ふとう",cat:"場所"},{en:"pile",jp:"積み重ね",cat:"名詞"},{en:"pine",jp:"松",cat:"植物"},{en:"pink",jp:"ピンク",cat:"色"},{en:"pipe",jp:"パイプ",cat:"物"},{en:"plum",jp:"プラム",cat:"食べ物"},{en:"plus",jp:"プラス",cat:"名詞"},{en:"poem",jp:"詩",cat:"学校"},{en:"pole",jp:"棒",cat:"物"},{en:"poll",jp:"投票",cat:"名詞"},
+  {en:"pool",jp:"プール",cat:"場所"},{en:"poor",jp:"貧しい",cat:"形容詞"},{en:"pore",jp:"毛穴",cat:"体"},{en:"port",jp:"港",cat:"場所"},{en:"pose",jp:"ポーズ",cat:"名詞"},{en:"post",jp:"投稿",cat:"名詞"},{en:"pour",jp:"そそぐ",cat:"動詞"},{en:"prey",jp:"えもの",cat:"動物"},{en:"prop",jp:"支柱",cat:"物"},{en:"pull",jp:"ひく",cat:"動詞"},
+  {en:"pump",jp:"ポンプ",cat:"物"},{en:"pure",jp:"純粋な",cat:"形容詞"},{en:"push",jp:"おす",cat:"動詞"},{en:"quiz",jp:"クイズ",cat:"学校"},{en:"race",jp:"レース",cat:"スポーツ"},{en:"rack",jp:"棚",cat:"家具"},{en:"rage",jp:"怒り",cat:"名詞"},{en:"rail",jp:"手すり",cat:"物"},{en:"rake",jp:"くまで",cat:"物"},{en:"ramp",jp:"スロープ",cat:"場所"},
+  {en:"rang",jp:"鳴った",cat:"動詞"},{en:"rank",jp:"順位",cat:"名詞"},{en:"rare",jp:"まれな",cat:"形容詞"},{en:"rash",jp:"発疹",cat:"体"},{en:"rate",jp:"割合",cat:"名詞"},{en:"rave",jp:"熱狂する",cat:"動詞"},{en:"read",jp:"読む",cat:"動詞"},{en:"real",jp:"本物の",cat:"形容詞"},{en:"reed",jp:"葦",cat:"植物"},{en:"reef",jp:"さんごしょう",cat:"自然"},
+  {en:"reel",jp:"リール",cat:"物"},{en:"rely",jp:"たよる",cat:"動詞"},{en:"rent",jp:"家賃",cat:"名詞"},{en:"rest",jp:"休む",cat:"動詞"},{en:"rice",jp:"ごはん",cat:"食べ物"},{en:"rich",jp:"豊かな",cat:"形容詞"},{en:"ride",jp:"のる",cat:"動詞"},{en:"ripe",jp:"熟した",cat:"形容詞"},{en:"rise",jp:"上がる",cat:"動詞"},{en:"risk",jp:"リスク",cat:"名詞"},
+  {en:"road",jp:"道路",cat:"場所"},{en:"roam",jp:"放浪する",cat:"動詞"},{en:"roar",jp:"うなる",cat:"動詞"},{en:"robe",jp:"ガウン",cat:"衣類"},{en:"rock",jp:"岩",cat:"自然"},{en:"role",jp:"役割",cat:"名詞"},{en:"roll",jp:"ころがる",cat:"動詞"},{en:"roof",jp:"屋根",cat:"建物"},{en:"room",jp:"部屋",cat:"場所"},{en:"root",jp:"根",cat:"自然"},
+  {en:"rope",jp:"ロープ",cat:"物"},{en:"rose",jp:"バラ",cat:"植物"},{en:"rout",jp:"大敗",cat:"名詞"},{en:"rove",jp:"さまよう",cat:"動詞"},{en:"rude",jp:"失礼な",cat:"形容詞"},{en:"ruin",jp:"廃墟",cat:"名詞"},{en:"rule",jp:"ルール",cat:"名詞"},{en:"rung",jp:"梯子の段",cat:"物"},{en:"rush",jp:"急ぐ",cat:"動詞"},{en:"rust",jp:"さび",cat:"名詞"},
+  {en:"safe",jp:"安全な",cat:"形容詞"},{en:"sage",jp:"賢者",cat:"人"},{en:"sail",jp:"帆",cat:"乗り物"},{en:"sake",jp:"ために",cat:"名詞"},{en:"sale",jp:"セール",cat:"名詞"},{en:"salt",jp:"塩",cat:"食べ物"},{en:"same",jp:"同じ",cat:"形容詞"},{en:"sand",jp:"砂",cat:"自然"},{en:"sane",jp:"正気な",cat:"形容詞"},{en:"sang",jp:"歌った",cat:"動詞"},
+  {en:"save",jp:"救う",cat:"動詞"},{en:"scan",jp:"スキャンする",cat:"動詞"},{en:"scar",jp:"きず",cat:"体"},{en:"seal",jp:"アザラシ",cat:"動物"},{en:"seam",jp:"縫い目",cat:"物"},{en:"seed",jp:"種",cat:"植物"},{en:"seek",jp:"もとめる",cat:"動詞"},{en:"seem",jp:"～のようだ",cat:"動詞"},{en:"seen",jp:"見た",cat:"動詞"},{en:"self",jp:"自分",cat:"名詞"},
+  {en:"sell",jp:"売る",cat:"動詞"},{en:"send",jp:"おくる",cat:"動詞"},{en:"shed",jp:"小屋",cat:"建物"},{en:"ship",jp:"船",cat:"乗り物"},{en:"shop",jp:"店",cat:"場所"},{en:"shot",jp:"ショット",cat:"スポーツ"},{en:"show",jp:"見せる",cat:"動詞"},{en:"shut",jp:"閉じる",cat:"動詞"},{en:"sick",jp:"病気の",cat:"形容詞"},{en:"side",jp:"側",cat:"名詞"},
+  {en:"sigh",jp:"ため息",cat:"動詞"},{en:"silk",jp:"絹",cat:"物"},{en:"sing",jp:"歌う",cat:"動詞"},{en:"sink",jp:"沈む",cat:"動詞"},{en:"site",jp:"サイト",cat:"名詞"},{en:"size",jp:"サイズ",cat:"名詞"},{en:"skin",jp:"皮膚",cat:"体"},{en:"skip",jp:"スキップ",cat:"動詞"},{en:"slam",jp:"たたきつける",cat:"動詞"},{en:"slim",jp:"細い",cat:"形容詞"},
+  {en:"slip",jp:"すべる",cat:"動詞"},{en:"slot",jp:"スロット",cat:"名詞"},{en:"slow",jp:"おそい",cat:"形容詞"},{en:"slug",jp:"ナメクジ",cat:"動物"},{en:"slum",jp:"スラム",cat:"場所"},{en:"snap",jp:"パチンとなる",cat:"動詞"},{en:"snow",jp:"雪",cat:"天気"},{en:"soak",jp:"ひたす",cat:"動詞"},{en:"soap",jp:"石けん",cat:"物"},{en:"soar",jp:"舞い上がる",cat:"動詞"},
+  {en:"soft",jp:"やわらかい",cat:"形容詞"},{en:"soil",jp:"土",cat:"自然"},{en:"sole",jp:"唯一の",cat:"形容詞"},{en:"some",jp:"いくつかの",cat:"形容詞"},{en:"song",jp:"歌",cat:"音楽"},{en:"soon",jp:"もうすぐ",cat:"副詞"},{en:"sort",jp:"種類",cat:"名詞"},{en:"soul",jp:"たましい",cat:"名詞"},{en:"span",jp:"はば",cat:"名詞"},{en:"star",jp:"星",cat:"宇宙"},
+];
+
+const STAGES=50,PER=10;
+function getStageWords(s){return ALL_WORDS.slice((s-1)*PER,s*PER);}
+
+function loadSave(){try{return JSON.parse(localStorage.getItem('eq_save')||'{}');}catch(e){return{};}}
+function writeSave(d){try{localStorage.setItem('eq_save',JSON.stringify(d));}catch(e){}}
+let save=loadSave();
+if(!save.stageData)save.stageData={};
+function getStageInfo(s){return save.stageData[s]||{cleared:false,stars:0};}
+function isUnlocked(s){if(s===1)return true;return getStageInfo(s-1).cleared;}
+
+let cur={stage:1,step:1,words:[],idx:0,correct:0,streak:0,bestStreak:0,stepScores:[0,0,0],flashFlipped:false,quizWord:null,typingInput:''};
+
+function speak(text,onEnd){
+  if(!window.speechSynthesis){if(onEnd)onEnd();return;}
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='en-US';u.rate=0.85;u.pitch=1.0;
+  if(onEnd)u.onend=onEnd;
+  window.speechSynthesis.speak(u);
+}
+function speakJP(text){
+  if(!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='ja-JP';
+  window.speechSynthesis.speak(u);
+}
+
+const correctMsgs=[
+  {emoji:"🎉",msg:"りゅうちゃんスゴイ！"},
+  {emoji:"🌟",msg:"りゅうちゃん天才！"},
+  {emoji:"🔥",msg:"りゅうちゃんその調子！"},
+  {emoji:"⚡",msg:"パーフェクト！最高！"},
+  {emoji:"🏆",msg:"りゅうちゃん強すぎる！"},
+  {emoji:"😎",msg:"カッコよすぎ！！"},
+  {emoji:"✨",msg:"すごすぎる！完璧！"},
+  {emoji:"🚀",msg:"りゅうちゃん無敵！"},
+];
+const wrongMsgs=[
+  {emoji:"💪",msg:"もう一回！絶対できる！"},
+  {emoji:"😤",msg:"ドンマイ！次いこ！"},
+  {emoji:"🔄",msg:"もう一度チャレンジ！"},
+  {emoji:"✊",msg:"ファイト！まだまだ！"},
+];
+
+let feedbackCb=null;
+function showFeedback(isCorrect,word,cb){
+  feedbackCb=cb;
+  const pool=isCorrect?correctMsgs:wrongMsgs;
+  const m=pool[Math.floor(Math.random()*pool.length)];
+  document.getElementById('fb-emoji').textContent=m.emoji;
+  document.getElementById('fb-msg').textContent=m.msg;
+  document.getElementById('fb-word').textContent=isCorrect?word.en+' = '+word.jp:'正解は「'+word.en+'」('+word.jp+')';
+  document.getElementById('feedback-box').className='feedback-box '+(isCorrect?'correct-fb':'wrong-fb');
+  document.getElementById('feedback-overlay').style.display='flex';
+  speakJP(m.msg);
+}
+function hideFeedback(){
+  document.getElementById('feedback-overlay').style.display='none';
+  if(feedbackCb){feedbackCb();feedbackCb=null;}
+}
+
+function showHome(){updateHomeStats();renderStages();showScreen('home');}
+function updateHomeStats(){
+  let ts=0,cl=0;
+  for(let s=1;s<=STAGES;s++){const i=getStageInfo(s);ts+=i.stars||0;if(i.cleared)cl++;}
+  document.getElementById('home-stars').textContent=ts;
+  document.getElementById('home-cleared').textContent=cl;
+  document.getElementById('home-words').innerHTML=(cl*PER)+'<span style="font-size:11px;color:var(--text3);">/500語</span>';
+}
+function renderStages(){
+  const c=document.getElementById('stages-container');c.innerHTML='';
+  const worlds=[
+    {label:'WORLD 1 はじまりの村',start:1,end:10},
+    {label:'WORLD 2 森のぼうけん',start:11,end:20},
+    {label:'WORLD 3 砂漠のなぞ',start:21,end:30},
+    {label:'WORLD 4 海の神殿',start:31,end:40},
+    {label:'WORLD 5 天空の城',start:41,end:50},
+  ];
+  worlds.forEach(w=>{
+    const lbl=document.createElement('div');lbl.className='world-label';lbl.textContent=w.label;c.appendChild(lbl);
+    const grid=document.createElement('div');grid.className='stage-grid';
+    for(let s=w.start;s<=w.end;s++){
+      const info=getStageInfo(s);const unlocked=isUnlocked(s);
+      const btn=document.createElement('button');btn.className='stage-btn';
+      if(!unlocked)btn.classList.add('locked');
+      else if(info.cleared)btn.classList.add('cleared');
+      else if(!getStageInfo(s-1||1).cleared&&s!==1)btn.classList.add('available');
+      else btn.classList.add('current');
+      btn.innerHTML=s+(info.stars>0?'<div class="stage-stars">'+'⭐'.repeat(info.stars)+'</div>':'');
+      if(unlocked)btn.onclick=()=>showIntro(s);
+      grid.appendChild(btn);
+    }
+    c.appendChild(grid);
+  });
+}
+
+function showIntro(stage){
+  if(stage!==undefined)cur.stage=stage;
+  cur.words=getStageWords(cur.stage);
+  document.getElementById('intro-num').textContent='STAGE '+cur.stage;
+  document.getElementById('intro-title').textContent=getStageName(cur.stage);
+  const wl=document.getElementById('intro-wordlist');wl.innerHTML='';
+  cur.words.forEach(w=>{
+    const el=document.createElement('span');
+    el.style.cssText='background:#ffffff18;padding:4px 10px;border-radius:99px;font-size:13px;color:var(--text2);';
+    el.textContent=w.en;wl.appendChild(el);
+  });
+  const info=getStageInfo(cur.stage);
+  document.getElementById('intro-prev-score').textContent=info.cleared?'前回スコア：⭐'.repeat(info.stars):'';
+  showScreen('intro');
+}
+
+function getStageName(s){
+  const n=['はじめの一歩','生き物たち','身のまわり','動きの言葉','形容詞マスター','家の中','乗り物と場所','体の部位','自然と天気','数と時間','動作動詞1','動作動詞2','食べ物と飲み物','色と形','感情表現','学校の道具','家族と友人','職業いろいろ','スポーツ','音楽と芸術','方向と位置','接続詞','副詞','代名詞','前置詞','宇宙と自然','植物','水の生き物','山と森','海と砂浜','気持ち表現','動物の赤ちゃん','建物','部屋の名前','お祭り','料理と味','色のバリエーション','季節','時間の表現','数の世界','スポーツ用語','音楽用語','体の動き','心の動き','物の形','乗り物大集合','場所のいろいろ','衣類と布','光と影','最後の決戦！'];
+  return n[(s-1)%n.length]||'ステージ '+s;
+}
+
+function startStep(step){
+  cur.step=step;cur.idx=0;cur.correct=0;cur.streak=0;cur.bestStreak=0;cur.flashFlipped=false;
+  if(step===1){cur.words=getStageWords(cur.stage);showScreen('step1');loadFlashCard();}
+  else if(step===2){showScreen('step2');loadQuizQ();}
+  else{showScreen('step3');loadTypingQ();}
+}
+
+function loadFlashCard(){
+  cur.flashFlipped=false;
+  const w=cur.words[cur.idx];
+  document.getElementById('flash-card').classList.remove('flipped');
+  document.getElementById('flash-en').textContent=w.en;
+  document.getElementById('flash-en2').textContent=w.en;
+  document.getElementById('flash-jp').textContent=w.jp;
+  document.getElementById('flash-cat').textContent=w.cat;
+  document.getElementById('flash-cat2').textContent=w.cat;
+  document.getElementById('flash-counter').textContent=(cur.idx+1)+' / '+cur.words.length;
+  document.getElementById('flash-nav').style.display='none';
+  updateRing('ring1','ring1-num',cur.idx,cur.words.length);
+  setTimeout(()=>speak(w.en),300);
+}
+function flipFlash(){if(cur.flashFlipped)return;cur.flashFlipped=true;document.getElementById('flash-card').classList.add('flipped');document.getElementById('flash-nav').style.display='grid';speak(cur.words[cur.idx].en);}
+function speakWord(){speak(cur.words[cur.idx].en);}
+function flashNext(knew){if(knew)cur.correct++;cur.idx++;if(cur.idx>=cur.words.length)showStepResult(1);else loadFlashCard();}
+
+let quizAnswered=false;
+function loadQuizQ(){
+  quizAnswered=false;
+  const w=cur.words[cur.idx];cur.quizWord=w;
+  document.getElementById('quiz-play-btn').classList.remove('playing');
+  updateRing('ring2','ring2-num',cur.idx,cur.words.length);
+  const others=shuffle(ALL_WORDS.filter(x=>x.en!==w.en)).slice(0,3);
+  const choices=shuffle([w,...others]);
+  const grid=document.getElementById('choice-grid');grid.innerHTML='';
+  choices.forEach(c=>{
+    const btn=document.createElement('button');btn.className='choice';btn.textContent=c.en;
+    btn.onclick=()=>checkQuiz(btn,c.en===w.en,w);grid.appendChild(btn);
+  });
+  setTimeout(()=>playQuizWord(),400);
+}
+function playQuizWord(){
+  const btn=document.getElementById('quiz-play-btn');btn.classList.add('playing');
+  speak(cur.quizWord.en,()=>btn.classList.remove('playing'));
+}
+function checkQuiz(btn,isCorrect,w){
+  if(quizAnswered)return;quizAnswered=true;
+  document.querySelectorAll('.choice').forEach(b=>{b.disabled=true;});
+  if(isCorrect){btn.classList.add('correct');cur.correct++;cur.streak++;cur.bestStreak=Math.max(cur.bestStreak,cur.streak);}
+  else{btn.classList.add('wrong');document.querySelectorAll('.choice').forEach(b=>{if(b.textContent===w.en)b.classList.add('correct');});cur.streak=0;}
+  showFeedback(isCorrect,w,()=>{cur.idx++;if(cur.idx>=cur.words.length)showStepResult(2);else loadQuizQ();});
+}
+
+function loadTypingQ(){
+  cur.typingInput='';
+  const w=cur.words[cur.idx];
+  document.getElementById('typing-jp').textContent=w.jp;
+  document.getElementById('typing-hint').textContent=w.en.length+'文字';
+  document.getElementById('typing-display').textContent='_';
+  document.getElementById('kb-check').disabled=false;
+  updateRing('ring3','ring3-num',cur.idx,cur.words.length);
+  buildKeyboard();
+  setTimeout(()=>speak(w.en),300);
+}
+function buildKeyboard(){
+  const rows=[['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m','⌫']];
+  const kb=document.getElementById('keyboard');kb.innerHTML='';
+  rows.forEach(row=>{
+    const div=document.createElement('div');div.className='kb-row';
+    row.forEach(k=>{
+      const btn=document.createElement('button');
+      btn.className='kb-key'+(k==='⌫'?' kb-del':'');btn.textContent=k;
+      btn.onclick=()=>kbPress(k);div.appendChild(btn);
+    });
+    kb.appendChild(div);
+  });
+}
+function kbPress(k){
+  if(k==='⌫'){cur.typingInput=cur.typingInput.slice(0,-1);}
+  else{if(cur.typingInput.length<20)cur.typingInput+=k;}
+  document.getElementById('typing-display').textContent=cur.typingInput||'_';
+}
+function checkTyping(){
+  const w=cur.words[cur.idx];
+  const isCorrect=cur.typingInput.toLowerCase()===w.en.toLowerCase();
+  if(isCorrect){cur.correct++;cur.streak++;cur.bestStreak=Math.max(cur.bestStreak,cur.streak);}
+  else cur.streak=0;
+  document.getElementById('kb-check').disabled=true;
+  showFeedback(isCorrect,w,()=>{cur.idx++;if(cur.idx>=cur.words.length)showStepResult(3);else loadTypingQ();});
+}
+
+function showStepResult(step){
+  cur.stepScores[step-1]=cur.correct;
+  const total=cur.words.length,pct=Math.round(cur.correct/total*100);
+  const stars=pct>=90?3:pct>=60?2:1;
+  document.getElementById('sr-score').textContent=cur.correct+'/'+total;
+  document.getElementById('sr-correct').textContent=cur.correct;
+  document.getElementById('sr-streak').textContent=cur.bestStreak;
+  document.getElementById('sr-stars2').textContent='⭐'+stars;
+  document.getElementById('sr-stars').textContent='⭐'.repeat(stars);
+  let title,sub;
+  if(pct===100){title='🎉 パーフェクト！';sub='りゅうちゃん完璧すぎ！！';}
+  else if(pct>=80){title='😊 よくできた！';sub='かなりいい感じ！次もがんばろう！';}
+  else if(pct>=60){title='😄 もう少し！';sub='練習するほど上手くなるよ！';}
+  else{title='💪 ファイト！';sub='もう一度チャレンジしてみよう！';}
+  document.getElementById('sr-title').textContent=title;
+  document.getElementById('sr-sub').textContent=sub;
+  const nextBtn=document.getElementById('sr-next-btn');
+  if(step<3){nextBtn.textContent='STEP '+(step+1)+' へ進む →';nextBtn.onclick=()=>startStep(step+1);}
+  else{nextBtn.textContent='🏆 ステージクリア！';nextBtn.onclick=()=>showStageClear();saveStageResult(stars);}
+  showScreen('step-result');
+}
+function saveStageResult(stars){
+  const info=getStageInfo(cur.stage);
+  save.stageData[cur.stage]={cleared:true,stars:Math.max(stars,info.stars||0),score:cur.stepScores.reduce((a,b)=>a+b,0)};
+  writeSave(save);
+}
+function showStageClear(){
+  document.getElementById('sc-stage').textContent='STAGE '+cur.stage;
+  const info=getStageInfo(cur.stage);
+  document.getElementById('sc-stars').textContent='⭐'.repeat(info.stars);
+  const wl=document.getElementById('sc-wordlist');wl.innerHTML='';
+  cur.words.forEach(w=>{
+    const el=document.createElement('span');
+    el.style.cssText='background:linear-gradient(135deg,#1dd1a133,#48dbfb22);border:1px solid var(--accent3)66;padding:4px 12px;border-radius:99px;font-size:13px;color:var(--accent3);font-weight:700;';
+    el.textContent=w.en+' '+w.jp;wl.appendChild(el);
+  });
+  speakJP('ステージクリア！りゅうちゃん最高！');
+  showScreen('stage-clear');
+}
+function nextStage(){if(cur.stage<STAGES)showIntro(cur.stage+1);else showHome();}
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function updateRing(rid,nid,idx,total){
+  document.getElementById(rid).style.strokeDashoffset=113-(113*idx/total);
+  document.getElementById(nid).textContent=idx+1;
+}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+showHome();
+</script>
+</body>
+</html>
