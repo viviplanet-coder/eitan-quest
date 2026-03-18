@@ -703,30 +703,69 @@ function showStepResult(step){
 
 
 // ===== STEP4 発音チェック =====
+// speechQueue：今の周で出題する単語リスト
+// speechMissed：今の周で間違えた単語リスト（次周に持ち越し）
 let recognition=null;
 let speechListening=false;
+let speechQueue=[];    // 今の周の出題リスト
+let speechMissed=[];   // 今の周で間違えた単語
+let speechRound=1;     // 今何周目か
 
 function loadSpeech(){
+  // 初回：全10語からスタート
+  speechQueue=[...G.words];
+  speechMissed=[];
+  speechRound=1;
   G.idx=0;G.correct=0;G.streak=0;G.best=0;
-  showSpeechQ();
+  showSpeechRoundBanner(()=>showSpeechQ());
+}
+
+function showSpeechRoundBanner(cb){
+  // 周回数と出題数をステータスに表示
+  const total=speechQueue.length;
+  if(speechRound===1){
+    document.getElementById('speech-status').textContent=
+      '1周目：全'+total+'語チャレンジ！';
+  } else {
+    document.getElementById('speech-status').textContent=
+      speechRound+'周目：苦手な'+total+'語に絞ってチャレンジ！';
+    speakJP('もう一回！苦手な'+total+'語だけやってみよ！');
+  }
+  setTimeout(cb, speechRound===1?300:1800);
 }
 
 function showSpeechQ(){
-  const w=G.words[G.idx];
-  document.getElementById('speech-en-show').textContent=w.en;   // ★英単語を大きく表示
-  document.getElementById('speech-jp-hint').textContent='（'+w.jp+'）'; // 日本語は小さくヒントとして
-  document.getElementById('speech-status').textContent='マイクボタンを押して話してね';
+  if(G.idx>=speechQueue.length){
+    // 今の周が終わった
+    if(speechMissed.length===0){
+      // 全問正解 → ステージクリア
+      showStepResult(4);
+    } else {
+      // 間違いがあった → 次周は間違えた単語だけ
+      speechRound++;
+      speechQueue=[...speechMissed];
+      speechMissed=[];
+      G.idx=0;
+      showSpeechRoundBanner(()=>showSpeechQ());
+    }
+    return;
+  }
+  const w=speechQueue[G.idx];
+  document.getElementById('speech-en-show').textContent=w.en;
+  document.getElementById('speech-jp-hint').textContent='（'+w.jp+'）';
+  document.getElementById('speech-status').textContent=
+    (speechRound>1?speechRound+'周目・':'')+(G.idx+1)+' / '+speechQueue.length;
   document.getElementById('speech-result-text').textContent='';
   document.getElementById('mic-btn').classList.remove('listening');
   document.getElementById('mic-btn').textContent='🎤';
-  updateRing('ring4','ring4-num',G.idx,G.words.length);
+  // リングを今周の進捗で更新
+  updateRing('ring4','ring4-num',G.idx,speechQueue.length);
   speechListening=false;
-  // 自動で手本発音
   setTimeout(()=>speak(w.en),400);
 }
 
 function previewWord(){
-  speak(G.words[G.idx].en);
+  speak(speechQueue[G.idx].en);
 }
 
 function toggleMic(){
@@ -751,15 +790,13 @@ function startMic(){
   document.getElementById('speech-result-text').textContent='';
 
   recognition.onresult=(e)=>{
-    const w=G.words[G.idx];
-    // 複数候補をすべてチェック
+    const w=speechQueue[G.idx];
     let heard='';
     let matched=false;
     for(let i=0;i<e.results[0].length;i++){
       const candidate=e.results[0][i].transcript.trim().toLowerCase();
       if(i===0) heard=candidate;
       if(candidate===w.en.toLowerCase()){matched=true;break;}
-      // 部分一致も許容（短い単語対策）
       if(candidate.includes(w.en.toLowerCase())||w.en.toLowerCase().includes(candidate)){
         if(candidate.length>=2) matched=true;
       }
@@ -767,20 +804,19 @@ function startMic(){
     stopMic();
     document.getElementById('speech-result-text').textContent='「'+heard+'」';
     if(matched){
-      // 正解：次の単語へ
+      // 正解：次の単語へ（間違いリストには入れない）
       G.correct++;G.streak++;G.best=Math.max(G.best,G.streak);
       showFB(true,w,()=>{
         G.idx++;
-        if(G.idx>=G.words.length) showStepResult(4);
-        else showSpeechQ();
+        showSpeechQ();
       });
     } else {
-      // 不正解：STEP4の最初からやり直し
+      // 不正解：間違いリストに追加して次の単語へ（最後まで続ける）
       G.streak=0;
+      speechMissed.push(w);
       showFB(false,w,()=>{
-        // idx・correctをリセットしてSTEP4の最初に戻す
-        speakJP('惜しかったで！最初からもう一回いってみ！');
-        setTimeout(()=>loadSpeech(), 1200);
+        G.idx++;
+        showSpeechQ();
       });
     }
   };
