@@ -767,6 +767,7 @@ function startMic(){
     stopMic();
     document.getElementById('speech-result-text').textContent='「'+heard+'」';
     if(matched){
+      // 正解：次の単語へ
       G.correct++;G.streak++;G.best=Math.max(G.best,G.streak);
       showFB(true,w,()=>{
         G.idx++;
@@ -774,11 +775,12 @@ function startMic(){
         else showSpeechQ();
       });
     } else {
+      // 不正解：STEP4の最初からやり直し
       G.streak=0;
       showFB(false,w,()=>{
-        G.idx++;
-        if(G.idx>=G.words.length) showStepResult(4);
-        else showSpeechQ();
+        // idx・correctをリセットしてSTEP4の最初に戻す
+        speakJP('惜しかったで！最初からもう一回いってみ！');
+        setTimeout(()=>loadSpeech(), 1200);
       });
     }
   };
